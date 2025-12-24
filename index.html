@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎟️ Friend Coupons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #111827;
+            color: #f3f4f6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #9ca3af;
+            font-size: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: #1f2937;
+            border: none;
+            border-radius: 12px;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: #374151;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: #1f2937;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #d1d5db;
+            font-size: 0.9rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: #374151;
+            border: 2px solid #4b5563;
+            border-radius: 10px;
+            color: #f3f4f6;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        input[type="color"] {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+        }
+
+        .btn-secondary {
+            background: #374151;
+            color: #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+        }
+
+        .templates {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .template-btn {
+            padding: 8px 14px;
+            background: #374151;
+            border: 2px dashed #6b7280;
+            border-radius: 20px;
+            color: #d1d5db;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .template-btn:hover {
+            border-color: #a855f7;
+            background: #4b5563;
+        }
+
+        .coupon-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .coupon-card {
+            background: #1f2937;
+            border-radius: 16px;
+            padding: 20px;
+            border-left: 4px solid;
+        }
+
+        .coupon-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .coupon-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .coupon-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .coupon-desc {
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+
+        .coupon-code {
+            font-family: monospace;
+            background: #374151;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .coupon-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .coupon-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin: 16px 0;
+        }
+
+        .qr-container img {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .redemption-list {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #374151;
+        }
+
+        .redemption-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 16px;
+            background: #374151;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .notification-item .time {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .empty-state span {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        /* Redeem View */
+        .redeem-view {
+            display: none;
+            text-align: center;
+        }
+
+        .redeem-view.active {
+            display: block;
+        }
+
+        .redeem-coupon-display {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px dashed;
+        }
+
+        .redeem-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #10b981;
+        }
+
+        .redeem-title {
+            font-size: 1.8rem;
+            margin: 16px 0;
+        }
+
+        .redeem-desc {
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        /* Share Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1f2937;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .share-option {
+            padding: 16px;
+            background: #374151;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .share-option:hover {
+            background: #4b5563;
+            transform: translateX(5px);
+        }
+
+        .share-option h4 {
+            margin-bottom: 6px;
+        }
+
+        .share-option p {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        /* Printable Coupon */
+        .print-area {
+            display: none;
+        }
+
+        .printable-coupon {
+            width: 400px;
+            padding: 30px;
+            background: white;
+            color: #1f2937;
+            border: 4px dashed;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .printable-coupon .print-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .printable-coupon .print-desc {
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+
+        .printable-coupon .print-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #059669;
+            margin-bottom: 16px;
+        }
+
+        .printable-coupon .print-qr {
+            margin: 20px auto;
+        }
+
+        .printable-coupon .print-code {
+            font-size: 1.5rem;
+            font-family: monospace;
+            background: #f3f4f6;
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 16px;
+            letter-spacing: 3px;
+        }
+
+        .printable-coupon .print-terms {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .printable-coupon .print-instruction {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* Settings */
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .danger-zone {
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .danger-zone h3 {
+            color: #ef4444;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 200;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .tabs {
+                justify-content: center;
+            }
+
+            .tab-btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .coupon-header {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .coupon-actions {
+                justify-content: center;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-area {
+                display: block !important;
+            }
+
+            .printable-coupon {
+                border-color: currentColor;
+                margin: 0;
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Canvas for download */
+        #downloadCanvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="no-print">
+            <h1>🎟️ Friend Coupons</h1>
+            <p>Create cute coupons for your besties! 💜</p>
+        </header>
+
+        <!-- Main App View -->
+        <div id="appView" class="no-print">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="create">✨ Create</button>
+                <button class="tab-btn" data-tab="coupons">🎫 My Coupons</button>
+                <button class="tab-btn" data-tab="notifications">🔔 Notifications</button>
+                <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+            </div>
+
+            <!-- Create Tab -->
+            <div id="create" class="tab-content active">
+                <div class="card">
+                    <h2>✨ Create New Coupon</h2>
+
+                    <p style="margin-bottom: 16px; color: #9ca3af;">Quick templates:</p>
+                    <div class="templates">
+                        <button class="template-btn" data-template="pep-talk">🎤 Voice Note Pep Talk</button>
+                        <button class="template-btn" data-template="coffee">☕ Coffee & Chaos</button>
+                        <button class="template-btn" data-template="tea">🍵 Spill the Tea</button>
+                        <button class="template-btn" data-template="hype">🎉 Hype You Up</button>
+                        <button class="template-btn" data-template="hangout">🛋️ No Agenda Hangout</button>
+                    </div>
+
+                    <form id="couponForm">
+                        <div class="form-group">
+                            <label>🏷️ Coupon Title</label>
+                            <input type="text" id="couponTitle" placeholder="e.g., Free Hug Coupon" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>📝 Description</label>
+                            <textarea id="couponDesc" rows="3" placeholder="What's this coupon good for?"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>💰 Value (can be $0 for priceless things!)</label>
+                            <input type="number" id="couponValue" value="0" min="0" step="0.01">
+                        </div>
+
+                        <div class="form-group">
+                            <label>🎨 Coupon Color</label>
+                            <input type="color" id="couponColor" value="#a855f7">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="isGroupCoupon">
+                                <label for="isGroupCoupon">👥 Group Coupon (multiple people can redeem, once each)</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">🎟️ Create Coupon</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Coupons Tab -->
+            <div id="coupons" class="tab-content">
+                <div id="couponList" class="coupon-grid">
+                    <!-- Coupons will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div id="notifications" class="tab-content">
+                <div class="card">
+                    <h2>🔔 Redemption Notifications</h2>
+                    <div id="notificationList" class="notification-list">
+                        <!-- Notifications will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="card">
+                    <h2>⚙️ Settings</h2>
+
+                    <div class="settings-section">
+                        <h3>🔗 Webhook (IFTTT)</h3>
+                        <p style="color: #9ca3af; margin-bottom: 12px; font-size: 0.9rem;">
+                            Get notified when someone redeems a coupon! Paste your IFTTT webhook URL.
+                        </p>
+                        <div class="form-group">
+                            <input type="url" id="webhookUrl" placeholder="https://maker.ifttt.com/trigger/...">
+                        </div>
+                        <button class="btn btn-secondary" onclick="saveWebhook()">💾 Save Webhook</button>
+                    </div>
+
+                    <div class="settings-section danger-zone">
+                        <h3>⚠️ Danger Zone</h3>
+                        <p style="color: #9ca3af; margin-bottom: 12px; font-size: 0.9rem;">
+                            Clear all your data. This cannot be undone!
+                        </p>
+                        <button class="btn btn-secondary" style="background: #ef4444;" onclick="clearAllData()">🗑️ Clear All Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redeem View -->
+        <div id="redeemView" class="redeem-view">
+            <div class="card">
+                <div id="redeemContent">
+                    <!-- Redeem content will be rendered here -->
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="exitRedeemView()">← Back to App</button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal">
+            <h3>📤 Share on WhatsApp</h3>
+            <div id="shareOptions">
+                <!-- Share options will be rendered here -->
+            </div>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="closeShareModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="printArea" class="print-area">
+        <!-- Printable coupon will be rendered here -->
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Hidden canvas for download -->
+    <canvas id="downloadCanvas"></canvas>
+
+    <script>
+        // Data Management
+        let coupons = JSON.parse(localStorage.getItem('friendCoupons') || '[]');
+        let notifications = JSON.parse(localStorage.getItem('friendNotifications') || '[]');
+        let webhookUrl = localStorage.getItem('friendWebhook') || '';
+
+        // Templates
+        const templates = {
+            'pep-talk': { title: '🎤 Voice Note Pep Talk', desc: 'Redeem for one personalized voice note pep talk when you need a boost!', value: 0 },
+            'coffee': { title: '☕ Coffee & Chaos', desc: 'Good for one spontaneous coffee date to catch up and cause a little chaos', value: 5 },
+            'tea': { title: '🍵 Spill the Tea Session', desc: 'An uninterrupted gossip & venting session - I\'m all ears!', value: 0 },
+            'hype': { title: '🎉 Hype You Up', desc: 'Need validation? I\'ll gas you up like there\'s no tomorrow!', value: 0 },
+            'hangout': { title: '🛋️ No Agenda Hangout', desc: 'Just vibes. We can sit in silence or talk for hours - your call!', value: 0 }
+        };
+
+        // WhatsApp message templates
+        const whatsappTemplates = [
+            {
+                name: '👋 Group Chat Drop',
+                desc: 'Perfect for dropping in a group chat',
+                getMessage: (coupon) => `Hey besties! 🎟️ I made y'all a coupon!\n\n✨ ${coupon.title} ✨\n${coupon.description}\n\nClaim yours here: ${getRedeemUrl(coupon)}\n\n(Yes I'm being extra, no I will not apologize 💅)`
+            },
+            {
+                name: '💕 Sweet & Supportive',
+                desc: 'For when you want to be wholesome',
+                getMessage: (coupon) => `Hey lovely! 💜\n\nI made this just for you because you deserve nice things:\n\n🎟️ ${coupon.title}\n${coupon.description}\n\nRedeem anytime: ${getRedeemUrl(coupon)}\n\nLove you! 🥰`
+            },
+            {
+                name: '😎 Casual & Cute',
+                desc: 'Chill vibes only',
+                getMessage: (coupon) => `yo! got something for u 🎁\n\n${coupon.title}\n${coupon.description}\n\nlink: ${getRedeemUrl(coupon)}\n\n✌️`
+            },
+            {
+                name: '🌪️ Chaotic Bestie Energy',
+                desc: 'Maximum chaos and love',
+                getMessage: (coupon) => `BABE STOP EVERYTHING 🚨\n\nI literally made you a COUPON because I'm unhinged like that\n\n🎟️ ${coupon.title} 🎟️\n${coupon.description}\n\nGO REDEEM IT NOW: ${getRedeemUrl(coupon)}\n\nYOU'RE WELCOME 😤💜`
+            },
+            {
+                name: '📋 Simple & Clean',
+                desc: 'Just the essentials',
+                getMessage: (coupon) => `🎟️ ${coupon.title}\n${coupon.description}\n${getRedeemUrl(coupon)}`
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkForRedeemUrl();
+            renderCoupons();
+            renderNotifications();
+            document.getElementById('webhookUrl').value = webhookUrl;
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // Templates
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const template = templates[btn.dataset.template];
+                    document.getElementById('couponTitle').value = template.title;
+                    document.getElementById('couponDesc').value = template.desc;
+                    document.getElementById('couponValue').value = template.value;
+                });
+            });
+
+            // Form submit
+            document.getElementById('couponForm').addEventListener('submit', createCoupon);
+        }
+
+        function generateCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function createCoupon(e) {
+            e.preventDefault();
+
+            const coupon = {
+                id: Date.now().toString(),
+                code: generateCode(),
+                title: document.getElementById('couponTitle').value,
+                description: document.getElementById('couponDesc').value,
+                value: parseFloat(document.getElementById('couponValue').value) || 0,
+                color: document.getElementById('couponColor').value,
+                isGroup: document.getElementById('isGroupCoupon').checked,
+                redemptions: [],
+                createdAt: new Date().toISOString()
+            };
+
+            coupons.push(coupon);
+            saveCoupons();
+            renderCoupons();
+
+            // Reset form
+            document.getElementById('couponForm').reset();
+            document.getElementById('couponColor').value = '#a855f7';
+
+            // Switch to coupons tab
+            document.querySelector('[data-tab="coupons"]').click();
+            showToast('🎉 Coupon created!');
+        }
+
+        function saveCoupons() {
+            localStorage.setItem('friendCoupons', JSON.stringify(coupons));
+        }
+
+        function saveNotifications() {
+            localStorage.setItem('friendNotifications', JSON.stringify(notifications));
+        }
+
+        function getRedeemUrl(coupon) {
+            return `${window.location.origin}${window.location.pathname}#redeem/${coupon.code}`;
+        }
+
+        function getQRUrl(coupon) {
+            const redeemUrl = getRedeemUrl(coupon);
+            return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(redeemUrl)}`;
+        }
+
+        function renderCoupons() {
+            const container = document.getElementById('couponList');
+
+            if (coupons.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🎫</span>
+                        <p>No coupons yet! Create your first one ✨</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = coupons.map(coupon => `
+                <div class="coupon-card" style="border-left-color: ${coupon.color}">
+                    <div class="coupon-header">
+                        <div class="coupon-title">${coupon.title}</div>
+                        <div class="coupon-value">${coupon.value > 0 ? '$' + coupon.value.toFixed(2) : '💜 Priceless'}</div>
+                    </div>
+                    <div class="coupon-desc">${coupon.description || 'No description'}</div>
+                    <div class="coupon-code">CODE: ${coupon.code}</div>
+                    <div class="coupon-meta">
+                        <span>${coupon.isGroup ? '👥 Group' : '👤 Single use'}</span>
+                        <span>📊 ${coupon.redemptions.length} redeemed</span>
+                    </div>
+                    <div class="qr-container">
+                        <img src="${getQRUrl(coupon)}" alt="QR Code" loading="lazy">
+                    </div>
+                    ${coupon.redemptions.length > 0 ? `
+                        <div class="redemption-list">
+                            <strong>Redeemed by:</strong>
+                            ${coupon.redemptions.map(r => `
+                                <div class="redemption-item">
+                                    <span>${r.name}</span>
+                                    <span>${new Date(r.time).toLocaleDateString()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="coupon-actions">
+                        <button class="btn btn-small btn-secondary" onclick="copyLink('${coupon.code}')">📋 Copy Link</button>
+                        <button class="btn btn-small btn-secondary" onclick="openShareModal('${coupon.id}')">💬 WhatsApp</button>
+                        <button class="btn btn-small btn-secondary" onclick="downloadCoupon('${coupon.id}')">📥 Download</button>
+                        <button class="btn btn-small btn-secondary" onclick="printCoupon('${coupon.id}')">🖨️ Print</button>
+                        <button class="btn btn-small btn-secondary" onclick="deleteCoupon('${coupon.id}')" style="background: #7f1d1d;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationList');
+
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔔</span>
+                        <p>No notifications yet. Share some coupons!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.slice().reverse().map(n => `
+                <div class="notification-item">
+                    <div>🎉 <strong>${n.redeemerName}</strong> redeemed <strong>${n.couponTitle}</strong></div>
+                    <div class="time">${new Date(n.time).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function copyLink(code) {
+            const coupon = coupons.find(c => c.code === code);
+            if (coupon) {
+                navigator.clipboard.writeText(getRedeemUrl(coupon));
+                showToast('📋 Link copied!');
+            }
+        }
+
+        function openShareModal(couponId) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            const container = document.getElementById('shareOptions');
+            container.innerHTML = whatsappTemplates.map((template, i) => `
+                <div class="share-option" onclick="shareWhatsApp('${couponId}', ${i})">
+                    <h4>${template.name}</h4>
+                    <p>${template.desc}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+
+        function shareWhatsApp(couponId, templateIndex) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            const message = whatsappTemplates[templateIndex].getMessage(coupon);
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+            closeShareModal();
+        }
+
+        function printCoupon(couponId) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            const printArea = document.getElementById('printArea');
+            printArea.innerHTML = `
+                <div class="printable-coupon" style="border-color: ${coupon.color}; color: #1f2937;">
+                    <div class="print-title">${coupon.title}</div>
+                    <div class="print-desc">${coupon.description || ''}</div>
+                    <div class="print-value">${coupon.value > 0 ? '$' + coupon.value.toFixed(2) : '💜 Priceless'}</div>
+                    <div class="print-qr">
+                        <img src="${getQRUrl(coupon)}" alt="QR Code">
+                    </div>
+                    <div class="print-code">${coupon.code}</div>
+                    <div class="print-terms">${coupon.isGroup ? '👥 One use per person' : '👤 Single use only'}</div>
+                    <div class="print-instruction">Scan QR code or enter code to redeem</div>
+                </div>
+            `;
+
+            window.print();
+        }
+
+        async function downloadCoupon(couponId) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            const canvas = document.getElementById('downloadCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size
+            canvas.width = 400;
+            canvas.height = 500;
+
+            // Background
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Border
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 5]);
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            // Title
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(coupon.title, canvas.width / 2, 60);
+
+            // Description
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '16px sans-serif';
+            const words = (coupon.description || '').split(' ');
+            let line = '';
+            let y = 100;
+            for (let word of words) {
+                const test = line + word + ' ';
+                if (ctx.measureText(test).width > 350) {
+                    ctx.fillText(line, canvas.width / 2, y);
+                    line = word + ' ';
+                    y += 25;
+                } else {
+                    line = test;
+                }
+            }
+            ctx.fillText(line, canvas.width / 2, y);
+
+            // Value
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 48px sans-serif';
+            ctx.fillText(coupon.value > 0 ? '$' + coupon.value.toFixed(2) : '💜 Priceless', canvas.width / 2, y + 70);
+
+            // Load and draw QR
+            const qrImg = new Image();
+            qrImg.crossOrigin = 'anonymous';
+            qrImg.src = getQRUrl(coupon);
+
+            await new Promise((resolve) => {
+                qrImg.onload = resolve;
+                qrImg.onerror = resolve;
+            });
+
+            ctx.drawImage(qrImg, (canvas.width - 150) / 2, y + 100, 150, 150);
+
+            // Code
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 28px monospace';
+            ctx.fillText(coupon.code, canvas.width / 2, y + 280);
+
+            // Terms
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '14px sans-serif';
+            ctx.fillText(coupon.isGroup ? '👥 One use per person' : '👤 Single use only', canvas.width / 2, y + 320);
+
+            // Download
+            const link = document.createElement('a');
+            link.download = `coupon-${coupon.code}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            showToast('📥 Coupon downloaded!');
+        }
+
+        function deleteCoupon(couponId) {
+            if (confirm('Are you sure you want to delete this coupon?')) {
+                coupons = coupons.filter(c => c.id !== couponId);
+                saveCoupons();
+                renderCoupons();
+                showToast('🗑️ Coupon deleted');
+            }
+        }
+
+        // Redeem functionality
+        function checkForRedeemUrl() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#redeem/')) {
+                const code = hash.split('/')[1];
+                showRedeemView(code);
+            }
+        }
+
+        window.addEventListener('hashchange', checkForRedeemUrl);
+
+        function showRedeemView(code) {
+            const coupon = coupons.find(c => c.code === code);
+            const container = document.getElementById('redeemContent');
+
+            if (!coupon) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>😕</span>
+                        <p>Coupon not found. It may have been deleted or the code is incorrect.</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="redeem-coupon-display" style="border-color: ${coupon.color}">
+                        <div class="redeem-value">${coupon.value > 0 ? '$' + coupon.value.toFixed(2) : '💜'}</div>
+                        <div class="redeem-title">${coupon.title}</div>
+                        <div class="redeem-desc">${coupon.description || ''}</div>
+                    </div>
+                    <p style="margin-bottom: 20px; color: #9ca3af;">
+                        ${coupon.isGroup ? '👥 Group coupon - multiple people can redeem (once per person)' : '👤 Single use coupon'}
+                    </p>
+                    <div class="form-group">
+                        <label>👋 Your Name</label>
+                        <input type="text" id="redeemerName" placeholder="Enter your name to redeem">
+                    </div>
+                    <button class="btn btn-primary" onclick="redeemCoupon('${coupon.code}')" style="width: 100%;">
+                        🎉 Redeem This Coupon!
+                    </button>
+                `;
+            }
+
+            document.getElementById('appView').style.display = 'none';
+            document.getElementById('redeemView').classList.add('active');
+        }
+
+        function exitRedeemView() {
+            window.location.hash = '';
+            document.getElementById('appView').style.display = 'block';
+            document.getElementById('redeemView').classList.remove('active');
+        }
+
+        async function redeemCoupon(code) {
+            const name = document.getElementById('redeemerName').value.trim();
+            if (!name) {
+                showToast('❌ Please enter your name!');
+                return;
+            }
+
+            const coupon = coupons.find(c => c.code === code);
+            if (!coupon) {
+                showToast('❌ Coupon not found!');
+                return;
+            }
+
+            // Check if already redeemed by this person
+            if (coupon.redemptions.some(r => r.name.toLowerCase() === name.toLowerCase())) {
+                showToast('❌ You already redeemed this coupon!');
+                return;
+            }
+
+            // Check if single use and already redeemed
+            if (!coupon.isGroup && coupon.redemptions.length > 0) {
+                showToast('❌ This coupon has already been redeemed!');
+                return;
+            }
+
+            // Redeem!
+            const redemption = {
+                name: name,
+                time: new Date().toISOString()
+            };
+            coupon.redemptions.push(redemption);
+            saveCoupons();
+
+            // Add notification
+            const notification = {
+                redeemerName: name,
+                couponTitle: coupon.title,
+                couponValue: coupon.value,
+                time: new Date().toISOString()
+            };
+            notifications.push(notification);
+            saveNotifications();
+
+            // Send webhook
+            if (webhookUrl) {
+                try {
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        mode: 'no-cors',
+                        body: JSON.stringify({
+                            value1: name,
+                            value2: coupon.title,
+                            value3: coupon.value.toString()
+                        })
+                    });
+                } catch (e) {
+                    console.log('Webhook error:', e);
+                }
+            }
+
+            // Show success
+            document.getElementById('redeemContent').innerHTML = `
+                <div class="empty-state">
+                    <span>🎉</span>
+                    <h2 style="color: #10b981; margin-bottom: 16px;">Coupon Redeemed!</h2>
+                    <p>You got: <strong>${coupon.title}</strong></p>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">The coupon owner has been notified!</p>
+                </div>
+            `;
+        }
+
+        function saveWebhook() {
+            webhookUrl = document.getElementById('webhookUrl').value;
+            localStorage.setItem('friendWebhook', webhookUrl);
+            showToast('💾 Webhook saved!');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you SURE you want to delete all coupons and notifications? This cannot be undone!')) {
+                localStorage.removeItem('friendCoupons');
+                localStorage.removeItem('friendNotifications');
+                coupons = [];
+                notifications = [];
+                renderCoupons();
+                renderNotifications();
+                showToast('🗑️ All data cleared');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
