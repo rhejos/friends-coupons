@@ -679,7 +679,9 @@
                     <!-- Redeem content will be rendered here -->
                 </div>
             </div>
-            <button class="btn btn-secondary" onclick="exitRedeemView()">← Back to App</button>
+            <p id="redeemFooter" style="margin-top: 20px; color: #6b7280; font-size: 0.9rem;">
+                🎟️ Friend Coupons - Made with 💜
+            </p>
         </div>
     </div>
 
@@ -824,12 +826,39 @@
         }
 
         function getRedeemUrl(coupon) {
-            return `${window.location.origin}${window.location.pathname}#redeem/${coupon.code}`;
+            // Encode coupon data in URL so recipients can see it without localStorage
+            const couponData = {
+                c: coupon.code,
+                t: coupon.title,
+                d: coupon.description,
+                v: coupon.value,
+                col: coupon.color,
+                g: coupon.isGroup ? 1 : 0
+            };
+            const encoded = btoa(encodeURIComponent(JSON.stringify(couponData)));
+            return `${window.location.origin}${window.location.pathname}#redeem/${encoded}`;
         }
 
         function getQRUrl(coupon) {
             const redeemUrl = getRedeemUrl(coupon);
             return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(redeemUrl)}`;
+        }
+
+        function parseCouponFromUrl(encoded) {
+            try {
+                const decoded = decodeURIComponent(atob(encoded));
+                const data = JSON.parse(decoded);
+                return {
+                    code: data.c,
+                    title: data.t,
+                    description: data.d,
+                    value: data.v,
+                    color: data.col,
+                    isGroup: data.g === 1
+                };
+            } catch (e) {
+                return null;
+            }
         }
 
         function renderCoupons() {
@@ -1053,25 +1082,44 @@
         }
 
         // Redeem functionality
+        let isRedeemer = false; // Track if user came via redeem link
+        let currentRedeemCoupon = null; // Store coupon being redeemed
+
         function checkForRedeemUrl() {
             const hash = window.location.hash;
             if (hash.startsWith('#redeem/')) {
-                const code = hash.split('/')[1];
-                showRedeemView(code);
+                isRedeemer = true;
+                const encoded = hash.split('/')[1];
+
+                // Try to parse coupon data from URL
+                const urlCoupon = parseCouponFromUrl(encoded);
+
+                if (urlCoupon) {
+                    currentRedeemCoupon = urlCoupon;
+                    showRedeemView(urlCoupon);
+                } else {
+                    // Fallback: maybe it's an old-style code (for backwards compat)
+                    const localCoupon = coupons.find(c => c.code === encoded);
+                    if (localCoupon) {
+                        currentRedeemCoupon = localCoupon;
+                        showRedeemView(localCoupon);
+                    } else {
+                        showRedeemView(null);
+                    }
+                }
             }
         }
 
         window.addEventListener('hashchange', checkForRedeemUrl);
 
-        function showRedeemView(code) {
-            const coupon = coupons.find(c => c.code === code);
+        function showRedeemView(coupon) {
             const container = document.getElementById('redeemContent');
 
             if (!coupon) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <span>😕</span>
-                        <p>Coupon not found. It may have been deleted or the code is incorrect.</p>
+                        <p>Coupon not found or link is invalid.</p>
                     </div>
                 `;
             } else {
@@ -1088,7 +1136,7 @@
                         <label>👋 Your Name</label>
                         <input type="text" id="redeemerName" placeholder="Enter your name to redeem">
                     </div>
-                    <button class="btn btn-primary" onclick="redeemCoupon('${coupon.code}')" style="width: 100%;">
+                    <button class="btn btn-primary" onclick="redeemCoupon()" style="width: 100%;">
                         🎉 Redeem This Coupon!
                     </button>
                 `;
@@ -1098,59 +1146,57 @@
             document.getElementById('redeemView').classList.add('active');
         }
 
-        function exitRedeemView() {
-            window.location.hash = '';
-            document.getElementById('appView').style.display = 'block';
-            document.getElementById('redeemView').classList.remove('active');
-        }
-
-        async function redeemCoupon(code) {
+        async function redeemCoupon() {
             const name = document.getElementById('redeemerName').value.trim();
             if (!name) {
                 showToast('❌ Please enter your name!');
                 return;
             }
 
-            const coupon = coupons.find(c => c.code === code);
+            const coupon = currentRedeemCoupon;
             if (!coupon) {
                 showToast('❌ Coupon not found!');
                 return;
             }
 
-            // Check if already redeemed by this person
-            if (coupon.redemptions.some(r => r.name.toLowerCase() === name.toLowerCase())) {
+            // Check if this user already redeemed (stored in their localStorage)
+            const myRedemptions = JSON.parse(localStorage.getItem('myRedemptions') || '[]');
+            const alreadyRedeemed = myRedemptions.find(r => r.code === coupon.code);
+            if (alreadyRedeemed) {
                 showToast('❌ You already redeemed this coupon!');
                 return;
             }
 
-            // Check if single use and already redeemed
-            if (!coupon.isGroup && coupon.redemptions.length > 0) {
-                showToast('❌ This coupon has already been redeemed!');
-                return;
-            }
-
-            // Redeem!
-            const redemption = {
+            // Store that this user redeemed this coupon (in their browser)
+            myRedemptions.push({
+                code: coupon.code,
                 name: name,
                 time: new Date().toISOString()
-            };
-            coupon.redemptions.push(redemption);
-            saveCoupons();
+            });
+            localStorage.setItem('myRedemptions', JSON.stringify(myRedemptions));
 
-            // Add notification
-            const notification = {
-                redeemerName: name,
-                couponTitle: coupon.title,
-                couponValue: coupon.value,
-                time: new Date().toISOString()
-            };
-            notifications.push(notification);
-            saveNotifications();
+            // If admin is viewing their own coupon, also update local data
+            const localCoupon = coupons.find(c => c.code === coupon.code);
+            if (localCoupon) {
+                localCoupon.redemptions.push({
+                    name: name,
+                    time: new Date().toISOString()
+                });
+                saveCoupons();
 
-            // Send webhook
+                // Add notification for admin
+                notifications.push({
+                    redeemerName: name,
+                    couponTitle: coupon.title,
+                    couponValue: coupon.value,
+                    time: new Date().toISOString()
+                });
+                saveNotifications();
+            }
+
+            // Send webhook to notify creator
             if (webhookUrl) {
                 try {
-                    // Try with CORS first (IFTTT supports it)
                     await fetch(webhookUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1161,7 +1207,6 @@
                         })
                     });
                 } catch (e) {
-                    // Fallback: try with URL parameters (works if CORS fails)
                     try {
                         const params = new URLSearchParams({
                             value1: name,
