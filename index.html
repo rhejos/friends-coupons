@@ -1150,10 +1150,10 @@
             // Send webhook
             if (webhookUrl) {
                 try {
+                    // Try with CORS first (IFTTT supports it)
                     await fetch(webhookUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        mode: 'no-cors',
                         body: JSON.stringify({
                             value1: name,
                             value2: coupon.title,
@@ -1161,7 +1161,17 @@
                         })
                     });
                 } catch (e) {
-                    console.log('Webhook error:', e);
+                    // Fallback: try with URL parameters (works if CORS fails)
+                    try {
+                        const params = new URLSearchParams({
+                            value1: name,
+                            value2: coupon.title,
+                            value3: coupon.value.toString()
+                        });
+                        await fetch(`${webhookUrl}?${params}`, { method: 'POST', mode: 'no-cors' });
+                    } catch (e2) {
+                        console.log('Webhook error:', e2);
+                    }
                 }
             }
 
