@@ -1059,12 +1059,28 @@
             `).join('');
         }
 
-        function copyLink(code) {
+        async function copyLink(code) {
             const coupon = coupons.find(c => c.code === code);
-            if (coupon) {
-                navigator.clipboard.writeText(getRedeemUrl(coupon));
-                showToast('📋 Link copied!');
+            if (!coupon) return;
+
+            const longUrl = getRedeemUrl(coupon);
+            let redeemUrl = longUrl;
+
+            // Try to shorten the URL
+            try {
+                const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.shorturl) {
+                        redeemUrl = data.shorturl;
+                    }
+                }
+            } catch (e) {
+                // URL shortening failed, use long URL
             }
+
+            await navigator.clipboard.writeText(redeemUrl);
+            showToast('Link copied!');
         }
 
         function openShareModal(couponId) {
