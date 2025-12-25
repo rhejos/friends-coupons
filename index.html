@@ -617,18 +617,49 @@
                         </div>
 
                         <div class="form-group">
-                            <label>🔢 Redemption Type</label>
+                            <label>🔢 Who Can Redeem</label>
                             <select id="redemptionType" onchange="toggleRedemptionLimit()">
-                                <option value="single">👤 Single Use (1 person only)</option>
+                                <option value="single">👤 Single Person (1 person only)</option>
                                 <option value="limited">👥 Limited Group (set max people)</option>
-                                <option value="unlimited">🌍 Unlimited (anyone can redeem once)</option>
+                                <option value="unlimited">🌍 Unlimited (anyone)</option>
                             </select>
                         </div>
 
                         <div class="form-group" id="limitGroup" style="display: none;">
-                            <label>👥 Max Redemptions</label>
+                            <label>👥 Max People</label>
                             <input type="number" id="maxRedemptions" value="5" min="2" max="1000">
-                            <p style="color: #6b7280; font-size: 0.8rem; margin-top: 4px;">How many people can redeem this coupon?</p>
+                            <p style="color: #6b7280; font-size: 0.8rem; margin-top: 4px;">How many different people can use this coupon?</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>🔄 How Often Per Person</label>
+                            <select id="frequencyType" onchange="toggleFrequencyLimit()">
+                                <option value="once">1️⃣ One Time Only</option>
+                                <option value="daily">📅 Resets Daily</option>
+                                <option value="weekly">📆 Resets Weekly</option>
+                                <option value="monthly">🗓️ Resets Monthly</option>
+                                <option value="yearly">📅 Resets Yearly</option>
+                                <option value="custom">⚙️ Custom (X times per period)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="frequencyGroup" style="display: none;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <div style="flex: 1;">
+                                    <label>Uses Allowed</label>
+                                    <input type="number" id="usesPerPeriod" value="2" min="1" max="100">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Per Period</label>
+                                    <select id="customPeriod">
+                                        <option value="day">Day</option>
+                                        <option value="week">Week</option>
+                                        <option value="month" selected>Month</option>
+                                        <option value="year">Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p style="color: #6b7280; font-size: 0.8rem; margin-top: 4px;">e.g., "2 times per month"</p>
                         </div>
 
                         <button type="submit" class="btn btn-primary">🎟️ Create Coupon</button>
@@ -802,6 +833,11 @@
             document.getElementById('limitGroup').style.display = type === 'limited' ? 'block' : 'none';
         }
 
+        function toggleFrequencyLimit() {
+            const type = document.getElementById('frequencyType').value;
+            document.getElementById('frequencyGroup').style.display = type === 'custom' ? 'block' : 'none';
+        }
+
         function createCoupon(e) {
             e.preventDefault();
 
@@ -813,6 +849,31 @@
                 maxRedemptions = -1; // -1 means unlimited
             }
 
+            // Frequency settings
+            const frequencyType = document.getElementById('frequencyType').value;
+            let usesPerPeriod = 1;
+            let period = 'once';
+
+            if (frequencyType === 'once') {
+                usesPerPeriod = 1;
+                period = 'forever';
+            } else if (frequencyType === 'daily') {
+                usesPerPeriod = 1;
+                period = 'day';
+            } else if (frequencyType === 'weekly') {
+                usesPerPeriod = 1;
+                period = 'week';
+            } else if (frequencyType === 'monthly') {
+                usesPerPeriod = 1;
+                period = 'month';
+            } else if (frequencyType === 'yearly') {
+                usesPerPeriod = 1;
+                period = 'year';
+            } else if (frequencyType === 'custom') {
+                usesPerPeriod = parseInt(document.getElementById('usesPerPeriod').value) || 1;
+                period = document.getElementById('customPeriod').value;
+            }
+
             const coupon = {
                 id: Date.now().toString(),
                 code: generateCode(),
@@ -822,6 +883,8 @@
                 color: document.getElementById('couponColor').value,
                 redemptionType: redemptionType,
                 maxRedemptions: maxRedemptions,
+                usesPerPeriod: usesPerPeriod,
+                period: period,
                 redemptions: [],
                 createdAt: new Date().toISOString()
             };
@@ -834,6 +897,7 @@
             document.getElementById('couponForm').reset();
             document.getElementById('couponColor').value = '#a855f7';
             document.getElementById('limitGroup').style.display = 'none';
+            document.getElementById('frequencyGroup').style.display = 'none';
 
             // Switch to coupons tab
             document.querySelector('[data-tab="coupons"]').click();
@@ -858,6 +922,8 @@
                 col: coupon.color,
                 rt: coupon.redemptionType || 'single',
                 mx: coupon.maxRedemptions !== undefined ? coupon.maxRedemptions : 1,
+                up: coupon.usesPerPeriod || 1,
+                pd: coupon.period || 'forever',
                 wh: webhookUrl || '' // Include webhook so redeemers can trigger it
             };
             const encoded = btoa(encodeURIComponent(JSON.stringify(couponData)));
@@ -881,6 +947,8 @@
                     color: data.col,
                     redemptionType: data.rt || 'single',
                     maxRedemptions: data.mx !== undefined ? data.mx : 1,
+                    usesPerPeriod: data.up || 1,
+                    period: data.pd || 'forever',
                     webhookUrl: data.wh || ''
                 };
             } catch (e) {
@@ -888,9 +956,23 @@
             }
         }
 
+        function getFrequencyLabel(coupon) {
+            const uses = coupon.usesPerPeriod || 1;
+            const period = coupon.period || 'forever';
+
+            if (period === 'forever') return '1️⃣ One time only';
+            if (uses === 1) {
+                if (period === 'day') return '📅 Once daily';
+                if (period === 'week') return '📆 Once weekly';
+                if (period === 'month') return '🗓️ Once monthly';
+                if (period === 'year') return '📅 Once yearly';
+            }
+            return `🔄 ${uses}x per ${period}`;
+        }
+
         function getRedemptionLabel(coupon) {
             if (!coupon.redemptionType || coupon.redemptionType === 'single') {
-                return '👤 Single use';
+                return '👤 Single person';
             } else if (coupon.redemptionType === 'limited') {
                 return `👥 ${coupon.maxRedemptions} people max`;
             } else {
@@ -924,8 +1006,11 @@
                     <div class="coupon-code">CODE: ${coupon.code}</div>
                     <div class="coupon-meta">
                         <span>${getRedemptionLabel(coupon)}</span>
+                        <span>${getFrequencyLabel(coupon)}</span>
+                    </div>
+                    <div class="coupon-meta">
                         <span>📊 ${coupon.redemptions.length} redeemed</span>
-                        <span>🎟️ ${remaining} left</span>
+                        <span>🎟️ ${remaining} spots left</span>
                     </div>
                     <div class="qr-container">
                         <img src="${getQRUrl(coupon)}" alt="QR Code" loading="lazy">
@@ -1170,8 +1255,8 @@
                         <div class="redeem-title">${coupon.title}</div>
                         <div class="redeem-desc">${coupon.description || ''}</div>
                     </div>
-                    <p style="margin-bottom: 20px; color: #9ca3af;">
-                        ${getRedemptionLabel(coupon)}
+                    <p style="margin-bottom: 10px; color: #9ca3af;">
+                        ${getRedemptionLabel(coupon)} • ${getFrequencyLabel(coupon)}
                     </p>
                     <div class="form-group">
                         <label>👋 Your Name</label>
@@ -1187,6 +1272,51 @@
             document.getElementById('redeemView').classList.add('active');
         }
 
+        function getPeriodStart(period) {
+            const now = new Date();
+            if (period === 'day') {
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            } else if (period === 'week') {
+                const day = now.getDay();
+                const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Start on Monday
+                return new Date(now.getFullYear(), now.getMonth(), diff).getTime();
+            } else if (period === 'month') {
+                return new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            } else if (period === 'year') {
+                return new Date(now.getFullYear(), 0, 1).getTime();
+            }
+            return 0; // forever - beginning of time
+        }
+
+        function canRedeemAgain(coupon, myRedemptions) {
+            const period = coupon.period || 'forever';
+            const usesPerPeriod = coupon.usesPerPeriod || 1;
+
+            // Get redemptions for this coupon
+            const couponRedemptions = myRedemptions.filter(r => r.code === coupon.code);
+
+            if (period === 'forever') {
+                // One time only - if they've ever redeemed, they can't again
+                return couponRedemptions.length < usesPerPeriod;
+            }
+
+            // Count redemptions in current period
+            const periodStart = getPeriodStart(period);
+            const redemptionsThisPeriod = couponRedemptions.filter(r =>
+                new Date(r.time).getTime() >= periodStart
+            );
+
+            return redemptionsThisPeriod.length < usesPerPeriod;
+        }
+
+        function getNextRedeemTime(coupon, myRedemptions) {
+            const period = coupon.period || 'forever';
+            if (period === 'forever') return null;
+
+            const periodNames = { day: 'tomorrow', week: 'next week', month: 'next month', year: 'next year' };
+            return periodNames[period] || 'later';
+        }
+
         async function redeemCoupon() {
             const name = document.getElementById('redeemerName').value.trim();
             if (!name) {
@@ -1200,11 +1330,16 @@
                 return;
             }
 
-            // Check if this user already redeemed (stored in their localStorage)
+            // Check frequency limits
             const myRedemptions = JSON.parse(localStorage.getItem('myRedemptions') || '[]');
-            const alreadyRedeemed = myRedemptions.find(r => r.code === coupon.code);
-            if (alreadyRedeemed) {
-                showToast('❌ You already redeemed this coupon!');
+
+            if (!canRedeemAgain(coupon, myRedemptions)) {
+                const nextTime = getNextRedeemTime(coupon, myRedemptions);
+                if (nextTime) {
+                    showToast(`⏰ You've used your redemptions! Try again ${nextTime}`);
+                } else {
+                    showToast('❌ You already redeemed this coupon!');
+                }
                 return;
             }
 
