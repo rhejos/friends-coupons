@@ -1277,7 +1277,7 @@
 
             // Download
             const link = document.createElement('a');
-            link.download = `coupon-${coupon.code}.png`;
+            link.download = `${coupon.code}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
 
@@ -1433,7 +1433,7 @@
 
             // Convert canvas to blob for sharing
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            const file = new File([blob], `coupon-${coupon.code}.png`, { type: 'image/png' });
+            const file = new File([blob], `${coupon.code}.png`, { type: 'image/png' });
 
             const longUrl = getRedeemUrl(coupon);
 
