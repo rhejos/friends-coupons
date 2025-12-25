@@ -1419,10 +1419,12 @@
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
             const file = new File([blob], `coupon-${coupon.code}.png`, { type: 'image/png' });
 
+            const redeemUrl = getRedeemUrl(coupon);
+
+            // When sharing with files, include URL in text (many platforms ignore url param with files)
             const shareData = {
                 title: coupon.title,
-                text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here:`,
-                url: getRedeemUrl(coupon),
+                text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here: ${redeemUrl}`,
                 files: [file]
             };
 
@@ -1431,13 +1433,19 @@
                     await navigator.share(shareData);
                     showToast('Shared successfully!');
                 } else {
-                    // Fallback: share without file
+                    // Fallback: try sharing just the link
                     const textShare = {
                         title: coupon.title,
-                        text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here: ${getRedeemUrl(coupon)}`
+                        text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here: ${redeemUrl}`
                     };
-                    await navigator.share(textShare);
-                    showToast('Link shared! (Image not supported on this device)');
+                    if (navigator.canShare && navigator.canShare(textShare)) {
+                        await navigator.share(textShare);
+                        showToast('Link shared! (Image not supported)');
+                    } else {
+                        // Final fallback: copy to clipboard
+                        await navigator.clipboard.writeText(redeemUrl);
+                        showToast('Link copied to clipboard!');
+                    }
                 }
             } catch (err) {
                 if (err.name !== 'AbortError') {
