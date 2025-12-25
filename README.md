@@ -29,13 +29,29 @@ A cute, single-file web app for creating and sharing custom coupons with friends
    - 🔢 **Redemption Type**: Control how many people can redeem
 5. Click **🎟️ Create Coupon**
 
-### Redemption Types
+### Who Can Redeem
 
 | Type | Description |
 |------|-------------|
-| 👤 **Single Use** | Only 1 person can redeem (default) |
-| 👥 **Limited Group** | Set a max number of people (e.g., first 5 friends) |
-| 🌍 **Unlimited** | Anyone can redeem (once per person) |
+| 👤 **Single Person** | Only 1 person can use this coupon |
+| 👥 **Limited Group** | Set max number of people (e.g., first 5 friends) |
+| 🌍 **Unlimited** | Anyone can use the coupon |
+
+### How Often Per Person
+
+| Frequency | Description |
+|-----------|-------------|
+| 1️⃣ **One Time Only** | Each person can only redeem once ever |
+| 📅 **Resets Daily** | Can redeem once per day |
+| 📆 **Resets Weekly** | Can redeem once per week |
+| 🗓️ **Resets Monthly** | Can redeem once per month (great for subscriptions!) |
+| 📅 **Resets Yearly** | Can redeem once per year |
+| ⚙️ **Custom** | Set custom like "2 times per month" |
+
+**Example Use Cases:**
+- 🍦 Monthly ice cream coupon: Single person + Resets Monthly
+- ☕ Weekly coffee date: Limited group (5) + Resets Weekly
+- 🎁 Birthday coupon: Anyone + One Time Only
 
 ### Sharing Coupons
 
@@ -69,7 +85,8 @@ When someone receives your coupon link:
 **Important**:
 - Friends only see the redemption page - they can't access your admin area
 - The QR code and links include all coupon data, so they work from any device
-- Each person can only redeem once (tracked in their browser)
+- Redemption limits are tracked in each person's browser
+- For recurring coupons (daily/weekly/monthly), they can redeem again when the period resets
 
 ## 🔔 IFTTT Webhook Setup (Required for Notifications)
 
