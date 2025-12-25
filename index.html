@@ -761,32 +761,32 @@
             'hangout': { title: '🛋️ No Agenda Hangout', desc: 'Just vibes. We can sit in silence or talk for hours - your call!', value: 0 }
         };
 
-        // WhatsApp message templates
+        // WhatsApp message templates (emojis removed for better compatibility - add your own!)
         const whatsappTemplates = [
             {
                 name: '👋 Group Chat Drop',
                 desc: 'Perfect for dropping in a group chat',
-                getMessage: (coupon) => `Hey besties! 🎟️ I made y'all a coupon!\n\n✨ ${coupon.title} ✨\n${coupon.description}\n\nClaim yours here: ${getRedeemUrl(coupon)}\n\n(Yes I'm being extra, no I will not apologize 💅)`
+                getMessage: (coupon) => `Hey besties! I made y'all a coupon!\n\n${coupon.title}\n${coupon.description}\n\nClaim yours here: ${getRedeemUrl(coupon)}\n\n(Yes I'm being extra, no I will not apologize)`
             },
             {
                 name: '💕 Sweet & Supportive',
                 desc: 'For when you want to be wholesome',
-                getMessage: (coupon) => `Hey lovely! 💜\n\nI made this just for you because you deserve nice things:\n\n🎟️ ${coupon.title}\n${coupon.description}\n\nRedeem anytime: ${getRedeemUrl(coupon)}\n\nLove you! 🥰`
+                getMessage: (coupon) => `Hey lovely!\n\nI made this just for you because you deserve nice things:\n\n${coupon.title}\n${coupon.description}\n\nRedeem anytime: ${getRedeemUrl(coupon)}\n\nLove you!`
             },
             {
                 name: '😎 Casual & Cute',
                 desc: 'Chill vibes only',
-                getMessage: (coupon) => `yo! got something for u 🎁\n\n${coupon.title}\n${coupon.description}\n\nlink: ${getRedeemUrl(coupon)}\n\n✌️`
+                getMessage: (coupon) => `yo! got something for u\n\n${coupon.title}\n${coupon.description}\n\nlink: ${getRedeemUrl(coupon)}`
             },
             {
                 name: '🌪️ Chaotic Bestie Energy',
                 desc: 'Maximum chaos and love',
-                getMessage: (coupon) => `BABE STOP EVERYTHING 🚨\n\nI literally made you a COUPON because I'm unhinged like that\n\n🎟️ ${coupon.title} 🎟️\n${coupon.description}\n\nGO REDEEM IT NOW: ${getRedeemUrl(coupon)}\n\nYOU'RE WELCOME 😤💜`
+                getMessage: (coupon) => `BABE STOP EVERYTHING\n\nI literally made you a COUPON because I'm unhinged like that\n\n${coupon.title}\n${coupon.description}\n\nGO REDEEM IT NOW: ${getRedeemUrl(coupon)}\n\nYOU'RE WELCOME`
             },
             {
                 name: '📋 Simple & Clean',
                 desc: 'Just the essentials',
-                getMessage: (coupon) => `🎟️ ${coupon.title}\n${coupon.description}\n${getRedeemUrl(coupon)}`
+                getMessage: (coupon) => `${coupon.title}\n${coupon.description}\n\n${getRedeemUrl(coupon)}`
             }
         ];
 
