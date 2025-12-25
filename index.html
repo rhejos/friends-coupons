@@ -617,10 +617,18 @@
                         </div>
 
                         <div class="form-group">
-                            <div class="checkbox-group">
-                                <input type="checkbox" id="isGroupCoupon">
-                                <label for="isGroupCoupon">👥 Group Coupon (multiple people can redeem, once each)</label>
-                            </div>
+                            <label>🔢 Redemption Type</label>
+                            <select id="redemptionType" onchange="toggleRedemptionLimit()">
+                                <option value="single">👤 Single Use (1 person only)</option>
+                                <option value="limited">👥 Limited Group (set max people)</option>
+                                <option value="unlimited">🌍 Unlimited (anyone can redeem once)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="limitGroup" style="display: none;">
+                            <label>👥 Max Redemptions</label>
+                            <input type="number" id="maxRedemptions" value="5" min="2" max="1000">
+                            <p style="color: #6b7280; font-size: 0.8rem; margin-top: 4px;">How many people can redeem this coupon?</p>
                         </div>
 
                         <button type="submit" class="btn btn-primary">🎟️ Create Coupon</button>
@@ -789,8 +797,21 @@
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
+        function toggleRedemptionLimit() {
+            const type = document.getElementById('redemptionType').value;
+            document.getElementById('limitGroup').style.display = type === 'limited' ? 'block' : 'none';
+        }
+
         function createCoupon(e) {
             e.preventDefault();
+
+            const redemptionType = document.getElementById('redemptionType').value;
+            let maxRedemptions = 1; // default for single
+            if (redemptionType === 'limited') {
+                maxRedemptions = parseInt(document.getElementById('maxRedemptions').value) || 5;
+            } else if (redemptionType === 'unlimited') {
+                maxRedemptions = -1; // -1 means unlimited
+            }
 
             const coupon = {
                 id: Date.now().toString(),
@@ -799,7 +820,8 @@
                 description: document.getElementById('couponDesc').value,
                 value: parseFloat(document.getElementById('couponValue').value) || 0,
                 color: document.getElementById('couponColor').value,
-                isGroup: document.getElementById('isGroupCoupon').checked,
+                redemptionType: redemptionType,
+                maxRedemptions: maxRedemptions,
                 redemptions: [],
                 createdAt: new Date().toISOString()
             };
@@ -811,6 +833,7 @@
             // Reset form
             document.getElementById('couponForm').reset();
             document.getElementById('couponColor').value = '#a855f7';
+            document.getElementById('limitGroup').style.display = 'none';
 
             // Switch to coupons tab
             document.querySelector('[data-tab="coupons"]').click();
@@ -833,7 +856,9 @@
                 d: coupon.description,
                 v: coupon.value,
                 col: coupon.color,
-                g: coupon.isGroup ? 1 : 0
+                rt: coupon.redemptionType || 'single',
+                mx: coupon.maxRedemptions !== undefined ? coupon.maxRedemptions : 1,
+                wh: webhookUrl || '' // Include webhook so redeemers can trigger it
             };
             const encoded = btoa(encodeURIComponent(JSON.stringify(couponData)));
             return `${window.location.origin}${window.location.pathname}#redeem/${encoded}`;
@@ -854,10 +879,22 @@
                     description: data.d,
                     value: data.v,
                     color: data.col,
-                    isGroup: data.g === 1
+                    redemptionType: data.rt || 'single',
+                    maxRedemptions: data.mx !== undefined ? data.mx : 1,
+                    webhookUrl: data.wh || ''
                 };
             } catch (e) {
                 return null;
+            }
+        }
+
+        function getRedemptionLabel(coupon) {
+            if (!coupon.redemptionType || coupon.redemptionType === 'single') {
+                return '👤 Single use';
+            } else if (coupon.redemptionType === 'limited') {
+                return `👥 ${coupon.maxRedemptions} people max`;
+            } else {
+                return '🌍 Unlimited';
             }
         }
 
@@ -874,7 +911,10 @@
                 return;
             }
 
-            container.innerHTML = coupons.map(coupon => `
+            container.innerHTML = coupons.map(coupon => {
+                const remaining = coupon.maxRedemptions === -1 ? '∞' :
+                    Math.max(0, (coupon.maxRedemptions || 1) - coupon.redemptions.length);
+                return `
                 <div class="coupon-card" style="border-left-color: ${coupon.color}">
                     <div class="coupon-header">
                         <div class="coupon-title">${coupon.title}</div>
@@ -883,8 +923,9 @@
                     <div class="coupon-desc">${coupon.description || 'No description'}</div>
                     <div class="coupon-code">CODE: ${coupon.code}</div>
                     <div class="coupon-meta">
-                        <span>${coupon.isGroup ? '👥 Group' : '👤 Single use'}</span>
+                        <span>${getRedemptionLabel(coupon)}</span>
                         <span>📊 ${coupon.redemptions.length} redeemed</span>
+                        <span>🎟️ ${remaining} left</span>
                     </div>
                     <div class="qr-container">
                         <img src="${getQRUrl(coupon)}" alt="QR Code" loading="lazy">
@@ -907,8 +948,8 @@
                         <button class="btn btn-small btn-secondary" onclick="printCoupon('${coupon.id}')">🖨️ Print</button>
                         <button class="btn btn-small btn-secondary" onclick="deleteCoupon('${coupon.id}')" style="background: #7f1d1d;">🗑️</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function renderNotifications() {
@@ -1130,7 +1171,7 @@
                         <div class="redeem-desc">${coupon.description || ''}</div>
                     </div>
                     <p style="margin-bottom: 20px; color: #9ca3af;">
-                        ${coupon.isGroup ? '👥 Group coupon - multiple people can redeem (once per person)' : '👤 Single use coupon'}
+                        ${getRedemptionLabel(coupon)}
                     </p>
                     <div class="form-group">
                         <label>👋 Your Name</label>
@@ -1194,10 +1235,11 @@
                 saveNotifications();
             }
 
-            // Send webhook to notify creator
-            if (webhookUrl) {
+            // Send webhook to notify creator (use webhook from coupon data or local)
+            const hookUrl = coupon.webhookUrl || webhookUrl;
+            if (hookUrl) {
                 try {
-                    await fetch(webhookUrl, {
+                    await fetch(hookUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1213,7 +1255,7 @@
                             value2: coupon.title,
                             value3: coupon.value.toString()
                         });
-                        await fetch(`${webhookUrl}?${params}`, { method: 'POST', mode: 'no-cors' });
+                        await fetch(`${hookUrl}?${params}`, { method: 'POST', mode: 'no-cors' });
                     } catch (e2) {
                         console.log('Webhook error:', e2);
                     }
