@@ -2,6 +2,17 @@
 
 A cute, single-file web app for creating and sharing custom coupons with friends! Perfect for gift-giving, IOUs, or just spreading joy.
 
+---
+
+### ⚡ Want Your Own Coupon Website in 10 Minutes?
+
+**No coding required!** Follow our step-by-step guide:
+👉 **[Create Your Own Version](HOW-IT-WORKS.md#-create-your-own-version-step-by-step)**
+
+All you need is a free GitHub account. The guide walks you through everything - from forking the project to getting your first notification when a friend redeems!
+
+---
+
 ## 🚀 Deploy to GitHub Pages
 
 1. **Go to your repository** on GitHub
