@@ -71,8 +71,9 @@ Go to the **🎫 My Coupons** tab to see all your coupons. For each coupon you c
 | Button | What it does |
 |--------|--------------|
 | 📋 **Copy Link** | Copies the redemption URL to clipboard |
+| 📤 **Share** | Share coupon image + link together (great for group chats!) |
 | 💬 **WhatsApp** | Opens WhatsApp with a cute pre-written message |
-| 📥 **Download** | Saves the coupon as a PNG image |
+| 📥 **Download** | Saves the coupon as a nice gift card-style PNG |
 | 🖨️ **Print** | Opens print dialog for physical coupons |
 | 🗑️ **Delete** | Remove the coupon |
 
@@ -126,8 +127,16 @@ When someone receives your coupon link:
    - Decorative dashed border in the coupon's color
    - QR code for easy scanning
    - Large coupon code
-   - Terms (single use, limited, or unlimited)
+   - Terms showing who can redeem and how often (e.g., "Single person | Once monthly")
 3. Print, cut out, and give to a friend!
+
+## 📤 Sharing to Group Chats
+
+The **Share** button uses your device's native share menu to send both:
+- A nice gift card-style image of the coupon
+- The clickable redemption link
+
+This is perfect for dropping coupons in group chats where friends can see the pretty image AND easily tap to redeem. Works on mobile devices that support the Web Share API (most modern phones).
 
 ## 💾 Data Storage
 
@@ -137,19 +146,6 @@ When someone receives your coupon link:
 
 **Note**: If you clear your browser data, your coupons will be deleted. Friends can still redeem existing shared links.
 
-## 🎨 Features
-
-- ✨ Create custom coupons with titles, descriptions, values
-- 🔢 Flexible redemption limits (single, limited, unlimited)
-- 📱 QR codes that work from any device
-- 💬 WhatsApp integration with 5 fun message templates
-- 🖨️ Printable coupon designs
-- 📥 Download as PNG images
-- 🔔 IFTTT webhook notifications when someone redeems
-- 🔒 Admin area hidden from redeemers
-- 🌙 Dark theme with purple accents
-- 📱 Mobile responsive
-
 ## 🛠️ Technical Details
 
 - **Pure vanilla JavaScript** - No frameworks or build steps
@@ -157,6 +153,21 @@ When someone receives your coupon link:
 - **localStorage** for persistence
 - **QR codes** via [api.qrserver.com](https://goqr.me/api/)
 - **Webhook** data embedded in shareable URLs
+
+## 🎨 Features
+
+- ✨ Create custom coupons with titles, descriptions, values
+- 🔢 Flexible redemption limits (single, limited, unlimited)
+- 🔄 Frequency controls (daily, weekly, monthly, yearly, custom)
+- 📱 QR codes that work from any device
+- 📤 Share image + link together to group chats
+- 💬 WhatsApp integration with 5 fun message templates
+- 🖨️ Printable coupon designs with full terms
+- 📥 Download as gift card-style PNG images
+- 🔔 IFTTT webhook notifications when someone redeems
+- 🔒 Admin area hidden from redeemers
+- 🌙 Dark theme with purple accents
+- 📱 Mobile responsive
 
 ## ❓ Troubleshooting
 

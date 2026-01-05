@@ -761,32 +761,32 @@
             'hangout': { title: '🛋️ No Agenda Hangout', desc: 'Just vibes. We can sit in silence or talk for hours - your call!', value: 0 }
         };
 
-        // WhatsApp message templates
+        // WhatsApp message templates (emojis removed for better compatibility - add your own!)
         const whatsappTemplates = [
             {
                 name: '👋 Group Chat Drop',
                 desc: 'Perfect for dropping in a group chat',
-                getMessage: (coupon) => `Hey besties! 🎟️ I made y'all a coupon!\n\n✨ ${coupon.title} ✨\n${coupon.description}\n\nClaim yours here: ${getRedeemUrl(coupon)}\n\n(Yes I'm being extra, no I will not apologize 💅)`
+                getMessage: (coupon) => `Hey besties! I made y'all a coupon!\n\n${coupon.title}\n${coupon.description}\n\nClaim yours here: ${getRedeemUrl(coupon)}\n\n(Yes I'm being extra, no I will not apologize)`
             },
             {
                 name: '💕 Sweet & Supportive',
                 desc: 'For when you want to be wholesome',
-                getMessage: (coupon) => `Hey lovely! 💜\n\nI made this just for you because you deserve nice things:\n\n🎟️ ${coupon.title}\n${coupon.description}\n\nRedeem anytime: ${getRedeemUrl(coupon)}\n\nLove you! 🥰`
+                getMessage: (coupon) => `Hey lovely!\n\nI made this just for you because you deserve nice things:\n\n${coupon.title}\n${coupon.description}\n\nRedeem anytime: ${getRedeemUrl(coupon)}\n\nLove you!`
             },
             {
                 name: '😎 Casual & Cute',
                 desc: 'Chill vibes only',
-                getMessage: (coupon) => `yo! got something for u 🎁\n\n${coupon.title}\n${coupon.description}\n\nlink: ${getRedeemUrl(coupon)}\n\n✌️`
+                getMessage: (coupon) => `yo! got something for u\n\n${coupon.title}\n${coupon.description}\n\nlink: ${getRedeemUrl(coupon)}`
             },
             {
                 name: '🌪️ Chaotic Bestie Energy',
                 desc: 'Maximum chaos and love',
-                getMessage: (coupon) => `BABE STOP EVERYTHING 🚨\n\nI literally made you a COUPON because I'm unhinged like that\n\n🎟️ ${coupon.title} 🎟️\n${coupon.description}\n\nGO REDEEM IT NOW: ${getRedeemUrl(coupon)}\n\nYOU'RE WELCOME 😤💜`
+                getMessage: (coupon) => `BABE STOP EVERYTHING\n\nI literally made you a COUPON because I'm unhinged like that\n\n${coupon.title}\n${coupon.description}\n\nGO REDEEM IT NOW: ${getRedeemUrl(coupon)}\n\nYOU'RE WELCOME`
             },
             {
                 name: '📋 Simple & Clean',
                 desc: 'Just the essentials',
-                getMessage: (coupon) => `🎟️ ${coupon.title}\n${coupon.description}\n${getRedeemUrl(coupon)}`
+                getMessage: (coupon) => `${coupon.title}\n${coupon.description}\n\n${getRedeemUrl(coupon)}`
             }
         ];
 
@@ -1028,6 +1028,7 @@
                     ` : ''}
                     <div class="coupon-actions">
                         <button class="btn btn-small btn-secondary" onclick="copyLink('${coupon.code}')">📋 Copy Link</button>
+                        <button class="btn btn-small btn-secondary" onclick="shareCoupon('${coupon.id}')">📤 Share</button>
                         <button class="btn btn-small btn-secondary" onclick="openShareModal('${coupon.id}')">💬 WhatsApp</button>
                         <button class="btn btn-small btn-secondary" onclick="downloadCoupon('${coupon.id}')">📥 Download</button>
                         <button class="btn btn-small btn-secondary" onclick="printCoupon('${coupon.id}')">🖨️ Print</button>
@@ -1058,12 +1059,28 @@
             `).join('');
         }
 
-        function copyLink(code) {
+        async function copyLink(code) {
             const coupon = coupons.find(c => c.code === code);
-            if (coupon) {
-                navigator.clipboard.writeText(getRedeemUrl(coupon));
-                showToast('📋 Link copied!');
+            if (!coupon) return;
+
+            const longUrl = getRedeemUrl(coupon);
+            let redeemUrl = longUrl;
+
+            // Try to shorten the URL
+            try {
+                const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.shorturl) {
+                        redeemUrl = data.shorturl;
+                    }
+                }
+            } catch (e) {
+                // URL shortening failed, use long URL
             }
+
+            await navigator.clipboard.writeText(redeemUrl);
+            showToast('Link copied!');
         }
 
         function openShareModal(couponId) {
@@ -1109,7 +1126,7 @@
                         <img src="${getQRUrl(coupon)}" alt="QR Code">
                     </div>
                     <div class="print-code">${coupon.code}</div>
-                    <div class="print-terms">${coupon.isGroup ? '👥 One use per person' : '👤 Single use only'}</div>
+                    <div class="print-terms">${getRedemptionLabel(coupon)} | ${getFrequencyLabel(coupon)}</div>
                     <div class="print-instruction">Scan QR code or enter code to redeem</div>
                 </div>
             `;
@@ -1124,78 +1141,354 @@
             const canvas = document.getElementById('downloadCanvas');
             const ctx = canvas.getContext('2d');
 
-            // Set canvas size
-            canvas.width = 400;
-            canvas.height = 500;
+            // Set canvas size for nice gift card proportions
+            canvas.width = 600;
+            canvas.height = 400;
 
-            // Background
-            ctx.fillStyle = '#1f2937';
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#1f2937');
+            gradient.addColorStop(1, '#111827');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Border
+            // Add decorative corner accents
+            ctx.fillStyle = coupon.color + '30';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(120, 0);
+            ctx.lineTo(0, 120);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(canvas.width, canvas.height);
+            ctx.lineTo(canvas.width - 120, canvas.height);
+            ctx.lineTo(canvas.width, canvas.height - 120);
+            ctx.closePath();
+            ctx.fill();
+
+            // Main border with rounded corners effect
             ctx.strokeStyle = coupon.color;
             ctx.lineWidth = 4;
-            ctx.setLineDash([10, 5]);
-            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+            ctx.setLineDash([]);
+            ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
+
+            // Inner decorative dashed border
+            ctx.strokeStyle = coupon.color + '60';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
+            ctx.setLineDash([]);
+
+            // Header ribbon effect
+            ctx.fillStyle = coupon.color;
+            ctx.fillRect(40, 50, 4, 40);
+            ctx.fillRect(canvas.width - 44, 50, 4, 40);
 
             // Title
             ctx.fillStyle = '#f3f4f6';
-            ctx.font = 'bold 24px sans-serif';
+            ctx.font = 'bold 32px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(coupon.title, canvas.width / 2, 60);
+            ctx.fillText(coupon.title, canvas.width / 2, 80);
 
-            // Description
+            // Divider line
+            ctx.strokeStyle = coupon.color + '40';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(80, 100);
+            ctx.lineTo(canvas.width - 80, 100);
+            ctx.stroke();
+
+            // Description with word wrap
             ctx.fillStyle = '#9ca3af';
             ctx.font = '16px sans-serif';
             const words = (coupon.description || '').split(' ');
             let line = '';
-            let y = 100;
+            let y = 130;
             for (let word of words) {
                 const test = line + word + ' ';
-                if (ctx.measureText(test).width > 350) {
+                if (ctx.measureText(test).width > 520) {
                     ctx.fillText(line, canvas.width / 2, y);
                     line = word + ' ';
-                    y += 25;
+                    y += 24;
                 } else {
                     line = test;
                 }
             }
             ctx.fillText(line, canvas.width / 2, y);
 
-            // Value
+            // Value badge
+            const valueY = y + 50;
+            const valueText = coupon.value > 0 ? '$' + coupon.value.toFixed(2) : 'Priceless';
+            ctx.fillStyle = coupon.color + '20';
+            ctx.beginPath();
+            ctx.ellipse(canvas.width / 2, valueY, 80, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
             ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 48px sans-serif';
-            ctx.fillText(coupon.value > 0 ? '$' + coupon.value.toFixed(2) : '💜 Priceless', canvas.width / 2, y + 70);
+            ctx.font = 'bold 36px sans-serif';
+            ctx.fillText(valueText, canvas.width / 2, valueY + 12);
 
-            // Load and draw QR
+            // QR Code section - left side
             const qrImg = new Image();
             qrImg.crossOrigin = 'anonymous';
             qrImg.src = getQRUrl(coupon);
-
             await new Promise((resolve) => {
                 qrImg.onload = resolve;
                 qrImg.onerror = resolve;
             });
 
-            ctx.drawImage(qrImg, (canvas.width - 150) / 2, y + 100, 150, 150);
+            const qrY = valueY + 55;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(75, qrY, 130, 130);
+            ctx.drawImage(qrImg, 80, qrY + 5, 120, 120);
 
-            // Code
+            // Code display - right of QR
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(230, qrY + 25, 200, 40);
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(230, qrY + 25, 200, 40);
             ctx.fillStyle = '#f3f4f6';
-            ctx.font = 'bold 28px monospace';
-            ctx.fillText(coupon.code, canvas.width / 2, y + 280);
+            ctx.font = 'bold 24px monospace';
+            ctx.fillText(coupon.code, 330, qrY + 52);
 
-            // Terms
+            // Terms - right of QR, below code
             ctx.fillStyle = '#6b7280';
-            ctx.font = '14px sans-serif';
-            ctx.fillText(coupon.isGroup ? '👥 One use per person' : '👤 Single use only', canvas.width / 2, y + 320);
+            ctx.font = '13px sans-serif';
+            const redemptionText = getRedemptionLabel(coupon).replace(/^[^\s]+\s/, ''); // Remove emoji
+            const frequencyText = getFrequencyLabel(coupon).replace(/^[^\s]+\s/, ''); // Remove emoji
+            ctx.fillText(redemptionText, 330, qrY + 85);
+            ctx.fillText(frequencyText, 330, qrY + 105);
+
+            // Scan instruction
+            ctx.fillStyle = '#4b5563';
+            ctx.font = 'italic 12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Scan to redeem', 105, qrY + 150);
+            ctx.textAlign = 'center';
+
+            // Footer branding
+            ctx.fillStyle = coupon.color + '80';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Friend Coupons', canvas.width / 2, canvas.height - 30);
 
             // Download
             const link = document.createElement('a');
-            link.download = `coupon-${coupon.code}.png`;
+            link.download = `${coupon.code}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
 
-            showToast('📥 Coupon downloaded!');
+            showToast('Coupon downloaded!');
+        }
+
+        async function shareCoupon(couponId) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            // Check if Web Share API with files is supported
+            if (!navigator.canShare) {
+                showToast('Share not supported - try Download instead');
+                return;
+            }
+
+            const canvas = document.getElementById('downloadCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas size for nice gift card proportions
+            canvas.width = 600;
+            canvas.height = 400;
+
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#1f2937');
+            gradient.addColorStop(1, '#111827');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add decorative corner accents
+            ctx.fillStyle = coupon.color + '30';
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(120, 0);
+            ctx.lineTo(0, 120);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(canvas.width, canvas.height);
+            ctx.lineTo(canvas.width - 120, canvas.height);
+            ctx.lineTo(canvas.width, canvas.height - 120);
+            ctx.closePath();
+            ctx.fill();
+
+            // Main border
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 4;
+            ctx.setLineDash([]);
+            ctx.strokeRect(16, 16, canvas.width - 32, canvas.height - 32);
+
+            // Inner decorative dashed border
+            ctx.strokeStyle = coupon.color + '60';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 4]);
+            ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
+            ctx.setLineDash([]);
+
+            // Header ribbon effect
+            ctx.fillStyle = coupon.color;
+            ctx.fillRect(40, 50, 4, 40);
+            ctx.fillRect(canvas.width - 44, 50, 4, 40);
+
+            // Title
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 32px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(coupon.title, canvas.width / 2, 80);
+
+            // Divider line
+            ctx.strokeStyle = coupon.color + '40';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(80, 100);
+            ctx.lineTo(canvas.width - 80, 100);
+            ctx.stroke();
+
+            // Description with word wrap
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '16px sans-serif';
+            const words = (coupon.description || '').split(' ');
+            let line = '';
+            let y = 130;
+            for (let word of words) {
+                const test = line + word + ' ';
+                if (ctx.measureText(test).width > 520) {
+                    ctx.fillText(line, canvas.width / 2, y);
+                    line = word + ' ';
+                    y += 24;
+                } else {
+                    line = test;
+                }
+            }
+            ctx.fillText(line, canvas.width / 2, y);
+
+            // Value badge
+            const valueY = y + 50;
+            const valueText = coupon.value > 0 ? '$' + coupon.value.toFixed(2) : 'Priceless';
+            ctx.fillStyle = coupon.color + '20';
+            ctx.beginPath();
+            ctx.ellipse(canvas.width / 2, valueY, 80, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 36px sans-serif';
+            ctx.fillText(valueText, canvas.width / 2, valueY + 12);
+
+            // QR Code section - left side
+            const qrImg = new Image();
+            qrImg.crossOrigin = 'anonymous';
+            qrImg.src = getQRUrl(coupon);
+            await new Promise((resolve) => {
+                qrImg.onload = resolve;
+                qrImg.onerror = resolve;
+            });
+
+            const qrY = valueY + 55;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(75, qrY, 130, 130);
+            ctx.drawImage(qrImg, 80, qrY + 5, 120, 120);
+
+            // Code display - right of QR
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(230, qrY + 25, 200, 40);
+            ctx.strokeStyle = coupon.color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(230, qrY + 25, 200, 40);
+            ctx.fillStyle = '#f3f4f6';
+            ctx.font = 'bold 24px monospace';
+            ctx.fillText(coupon.code, 330, qrY + 52);
+
+            // Terms - right of QR, below code
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '13px sans-serif';
+            const redemptionText = getRedemptionLabel(coupon).replace(/^[^\s]+\s/, '');
+            const frequencyText = getFrequencyLabel(coupon).replace(/^[^\s]+\s/, '');
+            ctx.fillText(redemptionText, 330, qrY + 85);
+            ctx.fillText(frequencyText, 330, qrY + 105);
+
+            // Scan instruction
+            ctx.fillStyle = '#4b5563';
+            ctx.font = 'italic 12px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('Scan to redeem', 105, qrY + 150);
+            ctx.textAlign = 'center';
+
+            // Footer branding
+            ctx.fillStyle = coupon.color + '80';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('Friend Coupons', canvas.width / 2, canvas.height - 30);
+
+            // Convert canvas to blob for sharing
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], `${coupon.code}.png`, { type: 'image/png' });
+
+            const longUrl = getRedeemUrl(coupon);
+
+            // Try to shorten the URL for cleaner sharing
+            let redeemUrl = longUrl;
+            try {
+                const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.shorturl) {
+                        redeemUrl = data.shorturl;
+                    }
+                }
+            } catch (e) {
+                // URL shortening failed, use long URL
+                console.log('URL shortening failed, using long URL');
+            }
+
+            // When sharing with files, include URL in text (many platforms ignore url param with files)
+            const shareData = {
+                title: coupon.title,
+                text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here: ${redeemUrl}`,
+                files: [file]
+            };
+
+            try {
+                if (navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                    showToast('Shared successfully!');
+                } else {
+                    // Fallback: try sharing just the link
+                    const textShare = {
+                        title: coupon.title,
+                        text: `${coupon.title}\n${coupon.description || ''}\n\nRedeem here: ${redeemUrl}`
+                    };
+                    if (navigator.canShare && navigator.canShare(textShare)) {
+                        await navigator.share(textShare);
+                        showToast('Link shared!');
+                    } else {
+                        // Final fallback: copy to clipboard
+                        await navigator.clipboard.writeText(redeemUrl);
+                        showToast('Link copied!');
+                    }
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    // User didn't cancel, try clipboard as last resort
+                    try {
+                        await navigator.clipboard.writeText(redeemUrl);
+                        showToast('Link copied!');
+                    } catch (e) {
+                        showToast('Share failed - try Copy Link');
+                    }
+                }
+            }
         }
 
         function deleteCoupon(couponId) {
