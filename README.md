@@ -146,6 +146,14 @@ This is perfect for dropping coupons in group chats where friends can see the pr
 
 **Note**: If you clear your browser data, your coupons will be deleted. Friends can still redeem existing shared links.
 
+## 🛠️ Technical Details
+
+- **Pure vanilla JavaScript** - No frameworks or build steps
+- **Single HTML file** - Easy to deploy anywhere
+- **localStorage** for persistence
+- **QR codes** via [api.qrserver.com](https://goqr.me/api/)
+- **Webhook** data embedded in shareable URLs
+
 ## 🎨 Features
 
 - ✨ Create custom coupons with titles, descriptions, values
@@ -160,14 +168,6 @@ This is perfect for dropping coupons in group chats where friends can see the pr
 - 🔒 Admin area hidden from redeemers
 - 🌙 Dark theme with purple accents
 - 📱 Mobile responsive
-
-## 🛠️ Technical Details
-
-- **Pure vanilla JavaScript** - No frameworks or build steps
-- **Single HTML file** - Easy to deploy anywhere
-- **localStorage** for persistence
-- **QR codes** via [api.qrserver.com](https://goqr.me/api/)
-- **Webhook** data embedded in shareable URLs
 
 ## ❓ Troubleshooting
 
